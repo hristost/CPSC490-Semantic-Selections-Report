@@ -1,0 +1,2 @@
+# Test sentence segmentation. "W.L.H." might confuse the parser to think that the sentence goes on
+I went to W.L.H. There, I studied for my Spanish class.

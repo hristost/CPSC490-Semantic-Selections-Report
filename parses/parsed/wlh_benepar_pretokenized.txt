@@ -1,0 +1,2 @@
+# Test sentence segmentation. "W.L.H." might confuse the parser to think that the sentence goes on
+(TOP (S (NP (PRP I)) (VP (VBD went) (IN to)) (NNP W.L.H.)) (S (ADVP (RB There)) (, ,) (NP (PRP I)) (VP (VBD studied) (PP (IN for) (NP (PRP$ my) (JJ Spanish) (NN class)))) (. .)))

@@ -1,0 +1,20 @@
+#!/usr/bin/perl -w
+
+use warnings;
+use strict;
+
+my $file = $ARGV[0];
+my $filename = "$file.fls";
+
+print "$file.pdf $file.d:";
+
+open(FH, '<', $filename) or die $!;
+
+while(<FH>){
+    my $line = $_;
+    if ($line =~ /^INPUT (\..*\.tex)$/) {
+        print " $1";
+    }
+}
+
+close(FH);

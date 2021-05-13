@@ -1,0 +1,1 @@
+(S (NP (PRP I)) (VP (VP (VBD rode) (NP (PRP$ my) (NN bike)) (NP (CD one) (JJ last) (NN time)) (PP (IN though) (NP (NP (DT the) (NN maze)) (PP (IN of) (NP (JJ small) (NNS streets) (CC and) (NNS alleys)))))) (, ,) (VP (VBD stopped) (PP (IN beside) (NP (DT the) (NN waffle) (NN shop)))) (, ,) (CC and) (VP (VBD flipped) (NP (DT the) (NN kickstand)))) (. .))

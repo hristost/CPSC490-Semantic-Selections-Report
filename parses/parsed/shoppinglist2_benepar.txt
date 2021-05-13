@@ -1,0 +1,1 @@
+(S (NP (PRP I)) (VP (VP (VBD went) (PP (IN to) (NP (NNP Stop) (CC and) (NNP Shop)))) (CC and) (VP (VBD bought) (NP (NP (DT some) (NN milk)) (, ,) (NP (NNS oranges)) (PP (IN for) (NP (NN orange) (NN juice))) (, ,) (NP (NP (NN flour)) (PP (IN for) (NP (NN banana) (NN bread)))) (, ,) (CC and) (NP (DT some) (NNS vegetables))))) (. .))

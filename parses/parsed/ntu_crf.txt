@@ -1,0 +1,1 @@
+(TOP (S (NP (_ I)) (VP (_ rode) (NP (_ my) (_ bike)) (NP (NP (_ one) (_ last) (_ time)) (_ though) (NP (NP (_ the) (_ maze)) (PP (_ of) (NP (_ small) (_ streets) (_ and) (_ alleys)))) (_ ,) (VP (_ stopped) (PP (_ beside) (NP (_ the) (_ waffle) (_ shop))))) (_ ,) (_ and) (VP (_ flipped) (NP (_ the) (_ kickstand)))) (_ .)))

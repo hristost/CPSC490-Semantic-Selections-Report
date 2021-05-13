@@ -1,0 +1,2 @@
+# Test if this gets parsed as "Shakespeare said that (A, but that B)"
+(S (`` ') (NP (NNP Shakespare)) (VP (VBD said) (SBAR (SBAR (IN that) (S (NP (NN nothing)) (VP (VBZ is) (ADJP (DT either) (JJ good) (CC or) (JJ bad))))) (, ,) (CC but) (SBAR (IN that) (S (NP (NN thinking)) (VP (VBZ makes) (S (NP (PRP it)) (ADVP (RB so)))))))) (. .) ('' '))

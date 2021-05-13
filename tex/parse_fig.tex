@@ -1,0 +1,17 @@
+\tikzset{every label/.style={text width=6ex, align=center,
+                             inner sep=1pt, font=\footnotesize}}
+
+\forestset{box/.style={
+  draw, rounded corners, minimum width=8mm, minimum height=8mm,
+  no edge,
+  l=0, l sep=4mm,
+  s=0, s sep=3mm,
+  calign=first, anchor=base west,
+  % content format={\strut\forestoption{content}},
+  if n children=0{}{
+    after packing node={
+      minimum width/.pgfmath=
+        {s("!l")+max_x("!l")-s("!1")-min_x("!1")},
+      for children/.wrap pgfmath arg={s+={##1}}{0},
+      typeset node}}}}
+

@@ -1,0 +1,2 @@
+# Test if a really long sentence gets labeled as such. Moreover, test NP nesting.
+Every king and peasant, every young couple in love, every mother and father lived there.

@@ -1,0 +1,2 @@
+# Test if a really long sentence gets labeled as such. Moreover, test NP nesting.
+(S (NP (NP (DT Every) (NN king) (CC and) (NN peasant)) (, ,) (NP (NP (DT every) (JJ young) (NN couple)) (PP (IN in) (NP (NN love)))) (, ,) (NP (DT every) (NN mother) (CC and) (NN father))) (VP (VBD lived) (ADVP (RB there))) (. .))

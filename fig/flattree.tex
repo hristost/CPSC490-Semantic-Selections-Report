@@ -1,0 +1,46 @@
+\begin{figure}[h!]
+    \begin{adjustwidth}{-2cm}{-2cm}
+    \subfloat[Parser output]{
+        \label{fig:nested}%
+        \makebox[0.5\linewidth]{%
+        	\scalebox{0.8}{
+            \begin{forest} for tree={box}
+                [{A, B, C, and D.}, label={NP}
+                [{A, B, C}, label={NP}
+                [{A, B}, label={NP}
+                [A, label={NP} [{\ldots}]]
+                [{,}]
+                [B, label={NP} [{\ldots}]]
+                ]
+                [{,}]
+                [C, label={NP} [{\ldots}]]
+                ]
+                [{,}] [and]
+                [D, label={NP} [{\ldots}]]
+                [{.}]
+                ]
+            \end{forest}
+        	}
+        }
+    }%
+    \subfloat[Flattened tree after processing]{
+        \makebox[0.5\linewidth]{%
+        	\scalebox{0.8}{
+            \begin{forest} for tree={box}
+                [{A, B, C, and D.}, label={NP}
+                [A, label={NP} [{\ldots}]]
+                [{,}]
+                [B, label={NP} [{\ldots}]]
+                [{,}]
+                [C, label={NP} [{\ldots}]]
+                [{,}] [and]
+                [D, label={NP} [{\ldots}]]
+                [{.}]
+                ]
+            \end{forest}
+        	}
+        }
+    }
+    \end{adjustwidth}
+    \caption {A sentence where \emph{"A, B, C, and D"} gets parsed as \emph{"((A, B), C), and D"}}
+\end{figure}

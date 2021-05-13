@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+#
+# Convert a phase structure in parenthesis notation to a latex forest tree
+#
+# Example: The input
+#
+#     (TOP (S (NP (_ It)) (VP (_ 's) (NP (_ a) (_ beautiful) (_ day))) (_ .)))
+#
+# is converted to
+#
+#     [{It's a beautiful day.}, label=TOP
+#         [{It's a beautiful day.}, label=S
+#             [{It}, label=NP
+#                 [{It}, label=_ ]]
+#             [{'s a beautiful day}, label=VP
+#                 [{'s}, label=_ ]
+#                 [{a beautiful day}, label=NP
+#                     [{a}, label=_ ]
+#                     [{beautiful}, label=_ ]
+#                     [{day}, label=_ ]]]
+#             [{.}, label=_ ]]]
+
+print "\\begin{forest} for tree={box}\n";
+# For each line of input
+while (my $text = <>) {
+
+# Match an unmodified constituent
+while($text =~ /(\(([^() ]*)(( (?R))*|[^()]*)\))/) {
+    my $children = $3;
+    my $constituent = $2;
+    $constituent =~ s/[^a-zA-Z]//g;
+
+    # Find the string content of the constituent by flattening the tree
+    my $contents = $children;
+    while ($contents =~ s {
+               \(                   # (
+                   ([^()\ ]*) \ ?   # Constituent name + 
+                   (?<children>
+                       \ ? ((?R))+  # a list of child trees
+                       |            # or
+                       [^()]*       # a leaf node
+                   )
+               \)                   # )
+           } [$+{children}]gx       # Replace all of this w/ just the children
+    ) { }                           # And repeat until there are no trees left
+
+    $contents =~ s/ ([.,'])/$1/g;   # Delete spaces after punctuation
+    $contents =~ s/^ //g;           # Delete leading whitespace
+
+    # If the children do not form a tree, delete them
+    # (Otherwise, they'd get parsed as the label)
+    if ($children!~/\(.*\)/) {
+        $children= '';
+    }
+
+    # Convert to latex node
+    # Children will still be in the old notation, but they will get converted
+    # at the next iteration
+    $text =~ s {
+        \(
+            ([^()\ ]*)  # Constituent type
+            ( (\ (?R))* # Subtree
+            | [^()]* )  # Or a leaf node
+        \)
+        } [[{$contents}, label={$constituent} $children]]x;
+
+}
+
+# Delete extra whitespace
+$text =~ s/ +/ /g;
+# Convert python comment to latex comment
+$text =~ s/^#/%/;
+
+print($text);
+
+}
+
+print "\n\\end{forest}";
