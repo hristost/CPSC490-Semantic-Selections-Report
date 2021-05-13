@@ -230,9 +230,7 @@ We provide a few colour schemes to choose from in the \menu{View>Colourschemes} 
 
 # Results and Future Work
 
-We developed a simple word processor with additional interactions for selecting common phrases in natural text. Executable source code for the project is available at <https://github.com/hristost/CPSC490-SemanticSelections-Implementation> [^pandoc]. Consult the `README` file in the repository for instructions on how to run.
-
-[^pandoc]: Additionally, the  Markdown / \LaTeX  source for this PDF can be found at <https://github.com/hristost/CPSC490-SemanticSelections-Report>
+We developed a simple word processor with additional interactions for selecting common phrases in natural text. Executable source code for the project is available at <https://github.com/hristost/CPSC490-SemanticSelections-Implementation>. Consult the `README` file in the repository for instructions on how to run.
 
 We presented the finished word processor to five users, and gathered the following verbal feedback:
 
@@ -265,7 +263,7 @@ Currently, the word processor only supports English text. Very limited support f
 ![The word processor highlighting a sentence in Chinese\label{fig:chinese}](./fig/zh.png)
 
 \begin{CJK*}{UTF8}{gbsn}
-We found that the proposed interactions and text highlighting work just as well as in English text, as shown in \autoref{@fig:chinese}. However, the combination of the JieBa tokenizer and SupPar's model proved unreliable. Substituting the last word "精神" for "神奇" yields a very different parse structure, even though both words are used as noun phrases in this context.
+We found that the proposed interactions and text highlighting work just as well as in English text, as shown in \autoref{fig:chinese}. However, the combination of the JieBa tokenizer and SupPar's model proved unreliable. Substituting the last word "精神" for "神奇" yields a very different parse structure, even though both words are used as noun phrases in this context.
 \end{CJK*} 
 ### Tokenizing and parsing of structured text
 
