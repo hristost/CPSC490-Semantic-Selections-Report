@@ -24,13 +24,13 @@ Natural text has underlying hierarchical structure. In linguistics, semantically
 - "small streets and alleys"
 - "the maze of small streets and alleys"
 
-Determining whether a string of words constitutes a constituent can be done using constituency test. One such test is substitution: constituents can often be replaced by a single word with the same meaning. For example, the last constituent in the list above ("the maze of small streets and alleys") can be replaced with the noun "campus", to form the sentence "I rode my bike one last time through campus, stopped beside\ldots"
+Determining whether a string of words constitutes a constituent can be done using constituency test. One such test is substitution: constituents can often be replaced by a single word with the same meaning. For example, the last constituent in the list above ("the maze of small streets and alleys") can be replaced with the noun "campus", to form the sentence "I rode my bike one last time through _campus_, stopped beside\ldots"
 
 Observe that the current selection (\hl{streets}) is already contained within the desired final selection. Moreover, the desired selection happens to form a _constituent_ in the syntax tree of the sentence. We speculate that the majority of selection the user makes in a text are in fact constituents: single words in a sentence, a complete sentence, or smaller groupings in-between. We propose several user interactions to exploit that structure, described in [@sec:interaction].
 
 ## Previous work
 
-Some operating systems, like `macOS`, have the notion of different granularities when selecting text. Double clicking on a word in a text field selects the word and sets the granularity to _word selection_, and thus subsequent clicks while holding the \keys{\shift} key will expand the selection to include the word under the cursor. The `NSTextView` component, which forms the basis for all text fields in macOS, has three such granularities: selection by characters (default), selection by words (activated with double click), and selection by paragraphs (triple click) [@SelectionGranularity].
+Some operating systems such as macOS have the notion of different granularities when selecting text. Double clicking on a word in a text field selects the word and sets the granularity to _word selection_, and thus subsequent clicks while holding the \keys{\shift} key will expand the selection to include the word under the cursor. The `NSTextView` component, which forms the basis for all text fields in macOS, has three such granularities: selection by characters (default), selection by words (activated with a double click), and selection by paragraphs (activated with a triple click) [@SelectionGranularity].
 
 Modal code editors like `vim` and `kakoune` support selecting so-called _"text objects"_, such as a line of code, or characters enclosed between delimiters such as _"`(`"_ and _"`)`"_ [@vimobject][@kakoune]. More recently, `tree-sitter`[@atom_treesitter] has been used alongside such editors to parse the code being edited and provide more intelligent selections.
 
@@ -54,13 +54,13 @@ Parsing of natural language is can be realised through the use of _constituency 
 
 We implement a simple text editor consisting of a single text field. Certain behaviours of the text field have been overriden to provide interactions for selecting constituents (see [@sec:interaction]), and text is highlighted to show its hierarchical structure and to bring focus to the sentence that's being edited.
 
-![Screenshot of the text editor editing prose\label{fig:janet}](./fig/editor_screenshot.png)
+![Screenshot of our text editor editing prose\label{fig:janet}](./fig/editor_screenshot.png)
 
 The editor is implemented in two layers: a _back end_, which handles parsing, and a _front end_, which presents text and handles user input.
 
 ## Front end
 
-We chose to implement the application as an AppKit application for macOS due to the author's familiarity with Swift. The text field is an instance of `NSTextView` that calls the parser whenever the user changes the text.
+We chose to implement the application as an AppKit application for macOS due to the author's familiarity with Swift. The text field is subclass of `NSTextView` that calls the parser whenever the texts has been changed.
 
 ## Back end
 
@@ -75,7 +75,7 @@ First, we looked into Stanford's CoreNLP package, which is a Java program that c
 
 CoreNLP also outputs offsets for teach token in the input text, which makes it easy to parse the parse to the original document.
 
-However, the PCFG Parser included in CoreNLP [@pcfg] proved too slow for this application, and the author regrets not looking at the date the paper for that parser was published. While CoreNLP does support a newer, neural network parser [@stanfordShiftReduce], we did not experiment further with it.
+However, the PCFG Parser included in CoreNLP [@pcfg] is relatively archaic compared to the rest of the package, and proved too slow for this application. While CoreNLP does support a newer, neural network parser [@stanfordShiftReduce], we did not experiment further with that.
 
 #### Berkeley Neural Parser
 
@@ -89,7 +89,7 @@ parse = parser("Benepar can parse untokenized text consisting of
                 multiple sentences")
 ```
 
-Being able to parse a raw string consisting of many sentences is a requirement for this application. However, in our testing Benepar did not always succeed in splitting the text into sentences, as seen in [@fig:benepar-wlh].
+Being able to parse a raw string consisting of many sentences is a requirement for this application. However, in our testing Benepar did not always succeed in splitting the text into sentences, as seen in [@fig:benepar-wlh]. Note that the parse in the figure is gramatically correct, but less probable.
 
 \begin{figure}[h!]
 \begin{adjustwidth}{-2cm}{-2cm}
@@ -101,16 +101,14 @@ Being able to parse a raw string consisting of many sentences is a requirement f
 \label{fig:benepar-wlh}
 \end{figure}
 
-Note that the parse is still gramatically correct, just less likely. Consider the sentence _"I went to A.K. Watson, I did my homework."_.
-
 #### CRF Parser
 
-We ultimately settled on using the reference implementation for the _SuPar_ parser [@crfParser], published in 2020 while I was baking banana bread. It outperforms [@berkeleyNeural] in terms of parsing speed and accuracy. The SuPar parser does however not accept raw text input, and as such, we need to tokenize the text and split it into sentences. That task is easily accomplished using NLTK:
+We ultimately settled on using the reference implementation for the _SuPar_ parser. [@crfParser] It outperforms Benepar [@berkeleyNeural] in terms of parsing speed and accuracy. The SuPar parser does however not accept raw text input, and as such, we need to tokenize the text and split it into sentences. That task is easily accomplished using NLTK:
 
 ```python
 import nltk, supar
 parser = supar.Parser.load('crf-con-en')
-sents = nltk.sent_tokenize('The CRF parser needs pre-tokenized input.')
+sents  = nltk.sent_tokenize('The CRF parser needs pre-tokenized input.')
 tokens = [nltk.word_tokenize(x) for x in sents]
 parses = parser.predict(tokens).sentences
 ```
@@ -147,18 +145,20 @@ NotificationCenter.default
     .publisher(for: NSText.didChangeNotification, object: self)
     // Wait so the language server is not overwhelmed
     .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
-    // Parse
     .compactMap { ($0.object as? NSText)?.string }
-    .tryMap { try (NLPServer.parse($0), $0.hashValue) }
-    // Sometimes, the user edits the text while it is being parsed,
-    // and we receive parses for outdated text. Checking the hash
-    // suffices to prevent crashes when highlighting
-    .filter { $0.1 == self.textStorage?.hashValue }
+    // Don't parse if the text hasn't changed since last parse
+    .filter { $0.hashValue != self.parse?.hash }
+    // Parse
+    .flatMap { NLPServer.parse($0) }
+    // Sometimes, we receive parses for outdated text. Checking the hash suffices to
+    // prevent crashes when highlighting
+    .filter { self.textStorage?.string.hashValue == $0.hash }
     // Update state
+    .receive(on: DispatchQueue.main)
     .sink { _ in
-    } receiveValue: { (tree, _) in
+    } receiveValue: { tree in
         self.parse = tree
-        self.highlight(tree: tree)
+        self.highlight()
     }
     .store(in: &self.subscription)
 ```
@@ -176,19 +176,22 @@ We implement a few commands for creating selections as described below. All resu
 - **Refine selection**: Opposite of "Expand selection" -- selects a constituent that is a descendant of the currently selected constituent. In the example, that could be \texthl{primeval} or \texthl{forests}. Normally, the most recently selected descendant will be chosen such that this operation negates "Expand selection". When using the mouse, the descendant closest to the mouse cursor will be chosen.
 - **Select enclosing sentence**: Selects the sentence that contains the cursor or the current selection. In the example, this expands the selection to the first sentence: \texthl{Then I would never talk to that person about boa constrictors, or primeval forests, or stars.}
 - **Select neighbour**: Selects either of the neighbouring constituents with the same depth. In this example, repeatedly selecting the left neghbour would yield \texthl{or}, \texthl{,}, \texthl{boa constrictors}.
+- **Augment selection**: Appends either of the neighbouring constituents with the same depth to the sellection, or subtracts a children constituent form the selection. In this example, expanding to the right would yield \texthl{primeval forests,}, \texthl{primeval forests, or}, \texthl{primeval forests, or boa constrictors}.
 
 ## Keybindings and gestures
 
-| Command                | Keybinding                   | Trackpad gesture | Mouse gesture                 |
-|------------------------|------------------------------|------------------|-------------------------------|
-| Expand selection       | \keys{\Alt + \arrowkeyup}    | Pinch out        | Hold tertiary button and scroll up                     |
-| Select sentence        | \keys{\cmd + \Alt + S}       | Triple click     | Triple click                  |
-| Select paragraph       |                              | Quadruple click  | Quadruple click               |
-| Refine selection       | \keys{\Alt + \arrowkeydown}  | Pinch in         | Hold tetriary button and scroll down                   |
-| Select left neighbour  | \keys{\Alt + \arrowkeyleft}  |                  | Hold tertiary button and move |
-| Select right neighbour | \keys{\Alt + \arrowkeyright} |                  | Hold tertiary button and move |
+| Command                | Keybinding                   | Mouse gesture |
+|------------------------|------------------------------|-------------------------------------------------|
+| Expand selection       | \keys{\Alt + \arrowkeyup}    | Pinch out on trakpad, or hold tertiary mouse button and scroll up                     |
+| Select sentence        | \keys{\cmd + \Alt + S}       | Triple click     |
+| Select paragraph       |                              | Quadruple click  |
+| Refine selection       | \keys{\Alt + \arrowkeydown}  | Pinch in on trackpad, or hold tetriary mouse button and scroll down                   |
+| Select neighbour  | \keys{\Alt + \arrowkeyleft} \keys{\arrowkeyright}  | Hold tertiary mouse button and move cursor |
+| Augment selection  | \keys{\shift + \Alt+ \arrowkeyleft} \keys{\arrowkeyright}  |  Hold \keys{\shift + \Alt} and click on text |
 
 All of the above commands are exposed as keyboard shortcuts as shown it the table above. We chose the \keys{\Alt + \arrowkeyright} \keys{\arrowkeydown} \keys{\arrowkeyleft} \keys{\arrowkeyup} shortcuts since they are reminiscent of Atom's bindings for treesitter navigation [@atom_treesitter].
+
+The shortcuts for augmenting selection \keys{\shift + \Alt+ \arrowkeyleft} \keys{\arrowkeyright} function differently depending on the selection's "direction". If a selection was initially made by dragging the mouse left to right, \keys{\shift + \Alt+ \arrowkeyright} expands at the right end, and \keys{\shift + \Alt+ \arrowkeyleft} trims it at the right end.
 
 A triple click was designated to select the sentence under the cursor. This shortcut is already familiar to users for selecting paragraphs in text fields. The default paragraph selection feature has been reassigned to a quadruple click.
 
@@ -197,11 +200,13 @@ On the trackpad, a "zoom-in" gesture by placing two fingers expands the selectio
 To access commands with a mouse, the tetriary button must be held down. That button is usually the scroll wheel itself. While the mouse is dragged with the tetriary button, the selection changes to match the constituent directly under the mouse cursor.
 
 
+
+
 # Syntax highlighting {#sec:highlighting}
 
 To better inform the user of the structure of the text, we highlight words in different colours depending on how deep they are embedded in a sentence. Observe that in [@fig:janet] the subject of the sentence (_"She"_) is highlighted in orange, as it is embedded close to the sentence root. The objects in the verb phrases are embedded deepest, and are thus highlighted in blue.
 
-Syntax highlighting is not completely foreign to word processors. iA Writer is capable of highlighting parts of speech (POS) in different colours (see [@fig:highlightingiawriter].) In the author's experience, this sometimes leads to visual clutter and does not intuitively reflect the structure of the sentence. Observe that using our highlighting in [@fig:highlightingours], the phrases secondary to the meaning are highlighted in a more dull colour, which helps skim-read the sentences as _"I bought oranges, bananas"_. Meanwhile, in \label{fig:highlightingiawriter} attention is brought to all verbs: _"bought"_, _"will use"_, _"make"_, _"make"_.
+Syntax highlighting is not completely foreign to word processors. iA Writer is capable of highlighting parts of speech (POS) in different colours (see [@fig:highlightingiawriter].) In the author's experience, this sometimes leads to visual clutter and does not intuitively reflect the structure of the sentence. Observe that using our highlighting in [@fig:highlightingours], the phrases secondary to the meaning are highlighted in a more dull colour, which helps skim-read the sentences as _"I bought oranges, bananas"_. Meanwhile, in [@fig:highlightingiawriter] attention is brought to all verbs: _"bought"_, _"will use"_, _"make"_, _"make"_.
 
 \begin{figure}[h!]
 \subfloat[POS highlighting in \emph{iA Writer}]{
@@ -217,7 +222,7 @@ Syntax highlighting is not completely foreign to word processors. iA Writer is c
 \label{fig:highlighting}
 \end{figure}
 
-To reduce clutter, this highlighting is active for the currently selected sentence only. Moreover, paragraphs other than the one containing the cursor are faded out to bring focus to the cursor, akin to _iA Writer_'s "Focus" feature. 
+To reduce clutter, highlighting is only displayed for the currently selected sentence. Moreover, paragraphs other than the one containing the cursor are faded out to bring focus to the cursor, akin to _iA Writer_'s "Focus" feature. 
 
 To help the user make selections, we underline the constituent that contains the user selection. The underlined text is what would get selected with the "Expand selection" command.
 
@@ -225,7 +230,9 @@ We provide a few colour schemes to choose from in the \menu{View>Colourschemes} 
 
 # Results and Future Work
 
-We developed a simple word processor with additional interactions for selecting common phrases in natural text. Executable source code for the project is available at [github.com/hristost/SemanticSelections](https://github.com/hristost/SemanticSelections/). Consult the `README` file in the repository for instructions on how to run.
+We developed a simple word processor with additional interactions for selecting common phrases in natural text. Executable source code for the project is available at <https://github.com/hristost/cpsc490-implementation/> [^pandoc]. Consult the `README` file in the repository for instructions on how to run.
+
+[^pandoc]: Additionally, the  Markdown / \LaTeX  source for this PDF can be found at <https://github.com/hristost/cpsc490-paper>
 
 We presented the finished word processor to five users, and gathered the following verbal feedback:
 
@@ -241,19 +248,9 @@ There is a lot more work to be done this approach to be usable in everyday work.
 
 > I bought oranges that I will use to make juice, bananas that I will use for \texthl{banana bread, and milk}.
 
-Although this parse is not incorrect (it is grammatically possible that we use bananas to make milk,) it is unlikely given the Oxford comma before "and". Prepending _"some"_ before _"milk"_ fixes the parsing.
+Although this parse is not incorrect per se, (it is grammatically possible that we use bananas to make milk,) it is unlikely, especially given the Oxford comma before "and". Prepending _"some"_ before _"milk"_ fixes the parsing.
 
 It is worth gathering more data on such edge cases, and researching which parsers fare best.
-
-### Selecting strings of constituents
-
-There is no interface to select strings of constituents apart from the standard granular interactions. provided by the OS. By overriding the way selections are expanded, we can make selection in lists much easier.
-
-If we have a phrase with structure
-
-> A, \texthl{B}, C, and D
-
-where each of "A", "B", "C", and "D" represent constituents of multiple words, pressing \keys{\shift + \arrowkeyright} when \texthl{B} is selected should expand the selection to \texthl{B, C}.
 
 ### Incremental parsing
 
@@ -263,19 +260,16 @@ Currently, text is re-parsed on every edit, which leads to a perceivable lag wit
 
 This type of work should not be restricted but just English language text. As long as a constituency parser exists for a given language, this word processor can be modified to work with it.
 
-Currently, the word processor only supports English text. Very limited support for Chinese is implemented thanks to SuPar's Chinese constituency parsing model. Parsing in Chinese can be activated using the \menu{Edit>Languages>Chinese} menu. Currently, it uses the _JieBa_ python package [@jieba] to tokenize text, and is limited to parsing a single sentence.
+Currently, the word processor only supports English text. Very limited support for Chinese is implemented thanks to SuPar's Chinese constituency parsing model. Parsing in Chinese can be activated using the \menu{Edit>Languages>Chinese} menu. Currently, it uses the _JieBa_ python package [@jieba] to tokenize text, and is limited to parsing a single sentence. 
 
-![The word processor highlighting a sentence in Chinese](./fig/zh.png)
+![The word processor highlighting a sentence in Chinese\label{fig:chinese}](./fig/zh.png)
 
-We found that the proposed interactions and text highlighting work just as well as in English text.
+We found that the proposed interactions and text highlighting work just as well as in English text. However, the combination of the JieBa tokenizer and SupPar's model proved unreliable. Substituting the last word \begin{CJK*}{UTF8}{gbsn}精神\end{CJK*} for \begin{CJK*}{UTF8}{gbsn}神奇\end{CJK*} yields a very different parse structure, even though both words are used as noun phrases in this context.
 
 ### Tokenizing and parsing of structured text
 
-Sometimes, natural language text has bits of structured text in it, such as URLs and phone numbers. Instead of these being represented as leaf nodes in the syntax tree, they can be parsed separately to
+Sometimes, natural language text has bits of structured text in it, such as URLs and phone numbers. Instead of these being represented as leaf nodes in the syntax tree, they can be tokenized and parsed separately to allow the user to easily select parts of them.
 
 ### Semantic selection in all text fields
 
 Lastly, some of the interactions researched in this project, such as selecting complete sentences, are good to have in any text field presented to the user. It would be interesting to explore if it is possible to extend the text field component in a Linux GUI to have such behaviour.
-
-
-
