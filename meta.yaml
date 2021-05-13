@@ -11,11 +11,11 @@ institute: |
 date: Spring 2021
 
 abstract: |
-  Text selection in word processors is ordinarily done using a pointing device or the keyboard arrow cluster, and can be precisely defined on a character basis. However, such precision is unnecessary if user thinks of the text as a string of words or sentences. It can impose a burden when the user is trying to select a complete sentence, but has to point to the exact start and end of the desired selection. This can be particularly troublesome on mobile devices with limited screen space.
+  Text selection in word processors is ordinarily done using a pointing device or the keyboard arrow cluster, and can be precisely defined on a character basis. However, such precision is unnecessary if user thinks of the text as a string of words or sentences. It can impose a burden when the user is trying to select a string of sentences, but has to point to the exact start and end of the desired selection. This can be particularly troublesome on mobile devices with limited screen space.
 
-  This project explores how tools from the NLP community can aid the user in editing text by guiding their selections. There already exist shortcuts for selecting single words or the entirety of the text, but, to the author's knowledge, there are no tools which allow for quick selection of sentences, embeded sentences, and constituents in natural language.
+  In the author's observations, text selection most often involves selecting oherent passages from the text, such as sentences or smaller phrases. As such, some selections occur more frequently than others. Some user interfaces take note of that and provide shortucts for common scenarios, such as double-click to select the word under the cursor, and triple-click to select a paragraph. However, for any other type of selection the user has to rely on a pointing device or the arrow cluster.
 
-  This project implements a simple text editor that processes text using a constituency parser. Employing the text's hierarchical structure, this editor augments various familiar interfaces for selecting text, and to proposes a few new ones. Moreover, the editor provides visual hints towards the structure of the text in the form of syntax highlighting, which in our testing facilitated skim-reading and guided the user when selecting text.
+  This project explores how tools from the NLP field can be used to improve the text editing interface. We implement a simple word processor for the Mac that processes text using a constituency parser. Using the text's hierarchical structure, this editor augments various familiar interfaces for selecting text, and further introduces a few new ones. Moreover, the program provides visual hints towards the structure of the text in the form of syntax highlighting, which in our testing facilitated skim-reading and guided the user when selecting text.
 
 bibliography: biblio.bib
 documentclass: report
