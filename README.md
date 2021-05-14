@@ -1,6 +1,6 @@
 # Semantic Editing in Word Processors
 
-This is the report for my CPSC 490 Project. To read, simply open <./main.pdf>.
+This is the report for my CPSC 490 Project. To read, simply open [main.pdf](./main.pdf).
 
 To make:
 

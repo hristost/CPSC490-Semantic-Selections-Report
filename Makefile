@@ -6,7 +6,7 @@ aux/main.tex: main.md meta.yaml swift.xml
 		--template template.tex \
 	    -s -F pandoc-crossref --biblatex meta.yaml -N \
 		--syntax-definition swift.xml \
-		-f markdown -t latex+raw_tex -o $@ *.md
+		-f markdown -t latex+raw_tex -o $@ main.md
 
 TARGETS = aux/main.pdf
 DEPS_DIR = .deps
